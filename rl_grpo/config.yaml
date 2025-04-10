@@ -1,8 +1,8 @@
 model:
   name: "Qwen/Qwen2.5-3B-Instruct"
-  lora_rank: 64
+  lora_rank: 16
   max_seq_length: 512
-  load_in_4bit: true
+  load_in_4bit: false
   fast_inference: true
   gpu_memory_utilization: 0.5
   target_modules:
@@ -15,21 +15,21 @@ model:
     - "down_proj"
   lora_alpha: 64
   use_gradient_checkpointing: "unsloth"
-  random_state: 3407
+  random_state: 0
 
 training:
   learning_rate: 0.00002
   warmup_ratio: 0.03
-  per_device_train_batch_size: 1
+  per_device_train_batch_size: 32
   gradient_accumulation_steps: 8
-  num_generations: 8
+  num_generations: 16
   max_completion_length: 512
   adam_beta1: 0.9
   adam_beta2: 0.99
   weight_decay: 0.1
   max_grad_norm: 0.1
   max_steps: 400
-  save_steps: 200
+  save_steps: 1
   output_dir: "outputs"
   logging_steps: 1
   lr_scheduler_type: "cosine"
