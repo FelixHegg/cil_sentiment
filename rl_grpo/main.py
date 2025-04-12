@@ -8,7 +8,7 @@ from datasets import load_dataset, DatasetDict
 from unsloth import FastLanguageModel, PatchFastRL
 from unsloth import is_bfloat16_supported
 from rl_grpo.reward_functions import correctness_reward, format_reward_func
-from rl_grpo.utils import LoggingCallback
+from rl_grpo.utils import LoggingCallback, generate_reasoning_prompt
 from trl import GRPOConfig, GRPOTrainer
 
 PatchFastRL("GRPO", FastLanguageModel)
@@ -36,45 +36,13 @@ class Trainer:
         )
 
         train_dataset = dataset["train"].map(
-            lambda x: self._generate_reasoning_prompt(x["sentence"], x["label"])
+            lambda x: generate_reasoning_prompt(x["sentence"], x["label"], self._tokenizer)
         )
         test_dataset = dataset["test"].map(
-            lambda x: self._generate_reasoning_prompt(x["sentence"], x["label"])
+            lambda x: generate_reasoning_prompt(x["sentence"], x["label"], self._tokenizer)
         )
 
         return train_dataset, test_dataset
-
-    def _generate_reasoning_prompt(self, text: str, label: str) -> dict:
-        """Generate individual prompt with reasoning."""
-        r1_prefix = [
-            {
-                "role": "system",
-                "content": (
-                    "You are a helpful assistant. You first thinks about the reasoning "
-                    "process in the mind and then provides the user with the answer."
-                ),
-            },
-            {
-                "role": "user",
-                "content": (
-                    f"You have to determine the sentiment of the following text: \n{text}"
-                    f"\nShow your analysis in <think> </think> tags. The final answer "
-                    f"goes inside <answer> </answer> tags. The answer can only be positive,"
-                    f" negative or neutral, but nothing else. Think step by step inside "
-                    f"<think> tags."
-                ),
-            },
-            {
-                "role": "assistant",
-                "content": "Let me solve this step by step.\n<think>",
-            },
-        ]
-        return {
-            "prompt": self._tokenizer.apply_chat_template(
-                r1_prefix, tokenize=False, continue_final_message=True
-            ),
-            "target": label,
-        }
 
     def _load_model(self) -> FastLanguageModel:
         """Load and prepare the model with LoRA and quantization."""
