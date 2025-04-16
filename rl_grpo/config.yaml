@@ -2,7 +2,7 @@ model:
   name: "Qwen/Qwen2.5-3B-Instruct"
   lora_rank: 16
   max_seq_length: 512
-  load_in_4bit: false
+  load_in_4bit: true
   fast_inference: true
   gpu_memory_utilization: 0.5
   target_modules:
@@ -34,6 +34,11 @@ training:
   logging_steps: 1
   lr_scheduler_type: "cosine"
   optim: "adamw_8bit"
+
+inference:
+  checkpoint_name: "checkpoint-400"
+  gpu_memory_utilization: 0.6
+  batch_size: 16
 
 path_data: "data"
 log_dir: completions_grpo/test_run2

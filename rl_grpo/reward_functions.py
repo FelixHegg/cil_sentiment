@@ -51,17 +51,20 @@ def extract_answer(completion: str) -> str:
     """Get predicted answer from completion - positive, neutral, negative or error."""
     try:
         completion = "<think>" + completion
-        match = re.search(r"<answer>(.*?)<\/answer>", completion)
-        if not match:
+        matches = re.findall(r"<answer>(.*?)<\/answer>", completion)
+        if not matches:
+            print("no match!!!!!!!!")
             return "error"
 
-        answer = match.group(1).strip()  # answer part
+        answer = matches[-1].strip()  # answer part
+        print(f"extracted answer: {answer}")
         if answer not in ["positive", "negative", "neutral"]:
             return "error"
 
         return answer
 
     except Exception:
+        print("exeption")
         return "error"
 
 
