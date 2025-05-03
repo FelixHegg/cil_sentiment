@@ -38,7 +38,7 @@ for resource in nltk_resources:
         except Exception as e: print(f"Error downloading '{resource}': {e}"); exit()
 
 # Define Data Directory, Device, Model Info, Sequence Length, Paths
-DATA_DIR = 'data'
+DATA_DIR = '../data'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 HF_MODEL_NAME = "distilbert-base-multilingual-cased"
 CLASSIFIER_TYPE = "MLP"

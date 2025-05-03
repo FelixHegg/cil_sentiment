@@ -41,7 +41,7 @@ for resource in nltk_resources:
             exit()
 
 # Define Data Directory
-DATA_DIR = 'data'
+DATA_DIR = '../data'
 
 # Load Training Data
 print("Loading training data...")

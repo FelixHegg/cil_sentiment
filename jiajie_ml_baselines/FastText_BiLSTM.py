@@ -36,7 +36,7 @@ for resource in nltk_resources:
         except Exception as e: print(f"Error downloading '{resource}': {e}"); exit()
 
 # Define Data Directory, Device, Model Save Path, and Sequence Length
-DATA_DIR = 'data'
+DATA_DIR = '../data'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BEST_MODEL_PATH = 'best_bilstm_fasttext_simple_prep_weighted_loss_model.pth'
 WANDB_RUN_NAME = "BiLSTM_FastText_WeightedLoss_Run1" # Use BiLSTM in name

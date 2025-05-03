@@ -39,7 +39,7 @@ for resource in nltk_resources:
             exit()
 
 # Define Data Directory, Device, and Model Save Path
-DATA_DIR = 'data'
+DATA_DIR = '../data'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BEST_MODEL_PATH = 'best_mlp_pretrained_w2v_simple_prep_weighted_loss_model.pth'
 WANDB_RUN_NAME = "MLP_PretrainedW2V_WeightedLoss_Run1" # <-- SET YOUR RUN NAME HERE

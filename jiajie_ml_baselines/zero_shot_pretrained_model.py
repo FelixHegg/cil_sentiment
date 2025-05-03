@@ -9,7 +9,7 @@ import math
 warnings.filterwarnings("ignore")
 
 # Define Constants and Device
-DATA_DIR = 'data'
+DATA_DIR = '../data'
 # --- Define Hugging Face Model Name ---
 HF_MODEL_NAME = "tabularisai/multilingual-sentiment-analysis"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
