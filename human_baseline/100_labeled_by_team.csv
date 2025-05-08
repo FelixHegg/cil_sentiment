@@ -1,4 +1,4 @@
-id,sentence,red_label
+id,sentence,pred_label
 84457,she blurted.,negative
 33315,$10 is the minimum tip they ask for.,negative
 95755,"Once arriving home, we opened our food.",neutral
