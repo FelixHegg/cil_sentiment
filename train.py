@@ -9,7 +9,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from trl import GRPOConfig, GRPOTrainer
 
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 from src.utils import Logger, prepare_data
 from src.reward import create_format_reward_fn, create_correctness_reward_fn
@@ -38,10 +38,10 @@ def main(args):
     dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
     if args.load_in_4bit:
         quant_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=dtype,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True,
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=dtype,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True,
         )
         base_model = AutoModelForCausalLM.from_pretrained(
             args.model,
@@ -49,6 +49,7 @@ def main(args):
             device_map="auto",
             low_cpu_mem_usage=True,
         )
+        base_model = prepare_model_for_kbit_training(base_model)
     else:
         base_model = AutoModelForCausalLM.from_pretrained(
             args.model,
@@ -100,8 +101,8 @@ def main(args):
         log_completions=False,
     )
 
-    reward_format = create_format_reward_fn(log_fn=logger.info)
-    reward_correctness = create_correctness_reward_fn(log_fn=logger.info)
+    reward_format = create_format_reward_fn(log_fn=logger.debug)
+    reward_correctness = create_correctness_reward_fn(log_fn=logger.debug)
 
     trainer = GRPOTrainer(
         model=model,
@@ -129,7 +130,6 @@ def setup_experiment(model_name: str, results_dir: os.PathLike):
     os.makedirs(checkpoint_dir, exist_ok=True)
 
     return experiment_dir
-
 
 if __name__ == "__main__":
 

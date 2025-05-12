@@ -25,9 +25,21 @@ class Logger(TrainerCallback):
     
     def info(self, msg: str):
         self.logger.info(msg)
+    
+    def debug(self, msg: str):
+        self.logger.debug(msg)
 
-    def on_step_end(self, args, state, control, **kwargs):#TODO: print more info
-        self.info(f"----------------------- step {state.global_step} --------------------------")
+    # def on_step_end(self, args, state, control, **kwargs):#TODO: print more info
+    #     self.info(f"----------------------- step {state.global_step} --------------------------")
+    
+    def on_log(self, args, state, control, logs=None, **kwargs):
+        loss = logs.get("loss") or 0.0
+        format = logs.get("rewards/format") or 0.0
+        correctness = logs.get("rewards/correctness") or 0.0
+        reward_std = logs.get("reward_std")
+        grad_norm = logs.get("grad_norm") or 0.0
+            
+        self.info(f"Step {state.global_step}: loss={loss:.5f}, format={format:.1f}, correctness={correctness:.1f}, reward_std={reward_std:.2f}, grad_norm={grad_norm:.5f}")
 
 
 def generate_reasoning_prompt(tokenizer: AutoTokenizer, text: str) -> dict:
