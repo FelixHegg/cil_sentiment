@@ -3,12 +3,11 @@ from glob import glob
 
 import yaml
 import argparse
-from functools import partial
+import wandb
 
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from trl import GRPOConfig, GRPOTrainer
-
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 
 from src.utils import Logger, prepare_data
@@ -23,6 +22,13 @@ def main(args):
     logger = Logger(exp_dir, verbose=args.verbose)
     logger.info(f"using device {device}")
     logger.info(f"experiment directory created at {exp_dir}")
+
+    # Initialize wandb
+    wandb.init(
+        project="grpo",
+        config=vars(args),
+        name=exp_dir
+    )
 
     # Save config
     with open(os.path.join(exp_dir, "config.yaml"), "w") as f:
@@ -73,6 +79,11 @@ def main(args):
     # Load model with LoRA
     model = get_peft_model(base_model, peft_config)
     model.train()
+
+    # Count parameters
+    total, trainable = count_parameters(model)
+    logger.info(f"Total params:     {total:,}")
+    logger.info(f"Trainable params: {trainable:,} ({trainable/total:.2%} of total)")
 
     # Train model
     training_config = GRPOConfig(
@@ -131,6 +142,11 @@ def setup_experiment(model_name: str, results_dir: os.PathLike):
 
     return experiment_dir
 
+def count_parameters(model):
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return total_params, trainable_params
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Train a model with GRPO.")
@@ -153,7 +169,7 @@ if __name__ == "__main__":
     parser.add_argument("--adam_beta1", type=float, default=0.9, help="Adam beta1.")
     parser.add_argument("--adam_beta2", type=float, default=0.999, help="Adam beta2.")
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay.")
-    parser.add_argument("--warmup_ratio", type=float, default=0.1, help="Warmup ratio.")
+    parser.add_argument("--warmup_ratio", type=float, default=0.0, help="Warmup ratio.")
     parser.add_argument("--max_grad_norm", type=float, default=1.0, help="Max gradient norm.")
     parser.add_argument("--lr_scheduler_type", type=str, default="cosine", help="Learning rate scheduler type.")
     parser.add_argument("--optim", type=str, default="adamw_torch", help="Optimizer type.")
