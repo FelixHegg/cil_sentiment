@@ -1,0 +1,33 @@
+{
+    "model_type": "cnn",
+    "run_name": "refactored_CNN_FastText",
+    "num_classes": 3,
+    "validation_split": 0.15,
+    "random_state": 42,
+    "batch_size": 64,
+    "embedding_model": "fasttext-wiki-news-subwords-300",
+    "vectorization_strategy": "sequence",
+    "num_filters": 80,
+    "filter_sizes": [
+        3,
+        4,
+        5
+    ],
+    "dropout": 0.6,
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "early_stopping_patience": 5,
+    "epochs": 100,
+    "max_seq_len_used": 29,
+    "embedding_dim": 300,
+    "label_encoder_classes": [
+        "negative",
+        "neutral",
+        "positive"
+    ],
+    "index_to_mae_label_map": {
+        "0": -1,
+        "1": 0,
+        "2": 1
+    }
+}

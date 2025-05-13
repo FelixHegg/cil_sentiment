@@ -192,4 +192,7 @@ pyrightconfig.json
 .history
 .ionide
 
+# Ignore wandb local files
+**/*wandb*/
+
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
