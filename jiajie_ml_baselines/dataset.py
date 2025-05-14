@@ -1,4 +1,3 @@
-# jiajie_ml_baselines/dataset.py
 import torch
 from torch.utils.data import Dataset
 

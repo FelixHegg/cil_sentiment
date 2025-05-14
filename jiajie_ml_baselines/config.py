@@ -1,4 +1,3 @@
-# jiajie_ml_baselines/config.py
 import torch
 import os
 

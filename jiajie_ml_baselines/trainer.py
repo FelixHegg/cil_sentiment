@@ -1,4 +1,3 @@
-# jiajie_ml_baselines/trainer.py
 import torch
 import torch.nn as nn
 import numpy as np

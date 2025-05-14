@@ -1,4 +1,3 @@
-# jiajie_ml_baselines/train.py
 import argparse
 import pandas as pd
 import numpy as np
