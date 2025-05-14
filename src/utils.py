@@ -36,7 +36,7 @@ class Logger(TrainerCallback):
         loss = logs.get("loss") or 0.0
         format = logs.get("rewards/format") or 0.0
         correctness = logs.get("rewards/correctness") or 0.0
-        reward_std = logs.get("reward_std")
+        reward_std = logs.get("reward_std") or 0.0
         grad_norm = logs.get("grad_norm") or 0.0
             
         self.info(f"Step {state.global_step}: loss={loss:.5f}, format={format:.1f}, correctness={correctness:.1f}, reward_std={reward_std:.2f}, grad_norm={grad_norm:.5f}")

@@ -59,10 +59,15 @@ def main(args):
     _, data_eval = prepare_data(tokenizer, config["data_path"])
     print(f"Eval dataset size: {len(data_eval)}")
 
+    model = model.merge_and_unload()
+    model.config.use_cache = True
+    model = model.to(device)
+    model = torch.compile(model)
+    model.eval()
     
     # Create output file
     output_file = os.path.join(args.result_dir, args.output_file)
-    with open(output_file, "w", encoding="utf-8") as f, torch.no_grad():
+    with open(output_file, "w", encoding="utf-8") as f, torch.inference_mode():
         f.write("id,label\n")
 
         counter = 0
