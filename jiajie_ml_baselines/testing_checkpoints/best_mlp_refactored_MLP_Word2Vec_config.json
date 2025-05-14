@@ -1,0 +1,39 @@
+{
+    "model_type": "mlp",
+    "run_name": "refactored_MLP_Word2Vec",
+    "num_classes": 3,
+    "validation_split": 0.15,
+    "random_state": 42,
+    "batch_size": 64,
+    "embedding_model": "word2vec-google-news-300",
+    "vectorization_strategy": "average",
+    "hidden_dims": [
+        128,
+        256,
+        128,
+        64
+    ],
+    "dropouts": [
+        0.5,
+        0.3,
+        0.2,
+        0.1
+    ],
+    "learning_rate": 0.001,
+    "weight_decay": 0,
+    "early_stopping_patience": 10,
+    "epochs": 100,
+    "lr_scheduler_factor": 0.5,
+    "max_seq_len_used": null,
+    "embedding_dim": 300,
+    "label_encoder_classes": [
+        "negative",
+        "neutral",
+        "positive"
+    ],
+    "index_to_mae_label_map": {
+        "0": -1,
+        "1": 0,
+        "2": 1
+    }
+}
