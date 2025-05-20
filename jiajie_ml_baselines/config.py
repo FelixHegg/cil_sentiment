@@ -19,7 +19,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # --- Preprocessing ---
 SEQUENCE_LENGTH_PERCENTILE = 95
 MIN_SEQUENCE_LENGTH = 10
-# Max sequence length specifically for the Hugging Face Base BERT model
+# Max sequence length specifically for the Hugging Face Base model
 HF_MAX_SEQ_LEN = 128
 
 # --- Embeddings & Pre-trained Models ---
@@ -27,7 +27,7 @@ W2V_MODEL_NAME = 'word2vec-google-news-300'
 FASTTEXT_MODEL_NAME = 'fasttext-wiki-news-subwords-300'
 HF_PRETRAINED_SENTIMENT_MODEL_NAME = "tabularisai/multilingual-sentiment-analysis" # For direct inference
 # Base model for PEFT fine-tuning
-HF_BASE_MODEL_FOR_BERT_PEFT = "distilbert-base-multilingual-cased"
+HF_BASE_MODEL_FOR_PEFT = "sentence-transformers/all-mpnet-base-v2"
 
 
 # --- Training General ---
@@ -90,15 +90,15 @@ HF_PRETRAINED_SENTIMENT_ANALYSIS_MODEL_CONFIG = {
     "hf_model_name": HF_PRETRAINED_SENTIMENT_MODEL_NAME
 }
 
-# --- Config for PEFT + BERT + MLP Head ---
-PEFT_BERT_MLP_CONFIG = {
-    "model_type": "peft_bert_mlp",
-    "hf_base_model_name": HF_BASE_MODEL_FOR_BERT_PEFT,
+# --- Config for PEFT + MPNet + MLP Head ---
+PEFT_MPNET_MLP_CONFIG = {
+    "model_type": "peft_mpnet_mlp",
+    "hf_base_model_name": HF_BASE_MODEL_FOR_PEFT,
     "max_seq_len": HF_MAX_SEQ_LEN,
     "peft_method": "LoRA",
     "lora_rank": 64,
     "lora_alpha": 128,
-    "lora_target_modules": ["q_lin", "v_lin", "k_lin", "out_lin"],
+    "lora_target_modules": ["query", "key", "value", "attention.output.dense", "pooler.dense"],
     "lora_dropout": 0.1,
     "lora_bias": "none",
     "classifier_mlp_hidden_dims": [128, 64],
@@ -107,7 +107,7 @@ PEFT_BERT_MLP_CONFIG = {
     "weight_decay": 1e-4,
     "optimizer_type": "AdamW",
     "batch_size": 256,
-    "epochs": 50,
+    "epochs": 100,
     "early_stopping_patience": 5,
     "lr_scheduler_patience": 3,
     "lr_scheduler_factor": 0.2,
@@ -123,8 +123,8 @@ def get_model_config(model_type):
         return BILSTM_CONFIG
     elif model_type_lower == 'hf_pretrained_sentiment_analysis_model':
         return HF_PRETRAINED_SENTIMENT_ANALYSIS_MODEL_CONFIG
-    elif model_type_lower == 'peft_bert_mlp':
-        return PEFT_BERT_MLP_CONFIG
+    elif model_type_lower == 'peft_mpnet_mlp':
+        return PEFT_MPNET_MLP_CONFIG
     else:
         raise ValueError(f"Unknown model type: {model_type}")
 

@@ -61,21 +61,21 @@ class BiLSTMClassifier(nn.Module):
         out = self.fc(out)
         return out
 
-# --- PEFT BERT + MLP Head Model ---
+# --- PEFT MPNet + MLP Head Model ---
 class PeftWithMLPHeadClassifier(nn.Module):
     def __init__(self, peft_base_model, num_classes, mlp_hidden_dims=[128, 64], mlp_dropout=0.5):
         super(PeftWithMLPHeadClassifier, self).__init__()
-        self.bert_peft = peft_base_model
-        self.bert_hidden_size = self.bert_peft.config.hidden_size if hasattr(self.bert_peft.config, 'hidden_size') else self.bert_peft.model.config.hidden_size
+        self.peft = peft_base_model
+        self.hidden_size = self.peft.config.hidden_size if hasattr(self.peft.config, 'hidden_size') else self.peft.model.config.hidden_size
         
         self.mlp_head = nn.Sequential(
-            nn.Linear(self.bert_hidden_size, mlp_hidden_dims[0]), nn.ReLU(), nn.Dropout(mlp_dropout),
+            nn.Linear(self.hidden_size, mlp_hidden_dims[0]), nn.ReLU(), nn.Dropout(mlp_dropout),
             nn.Linear(mlp_hidden_dims[0], mlp_hidden_dims[1]), nn.ReLU(), nn.Dropout(mlp_dropout * 0.6),
             nn.Linear(mlp_hidden_dims[1], num_classes)
         )
 
     def forward(self, input_ids, attention_mask):
-        outputs = self.bert_peft(input_ids=input_ids, attention_mask=attention_mask)
+        outputs = self.peft(input_ids=input_ids, attention_mask=attention_mask)
         cls_output = outputs.last_hidden_state[:, 0, :]
         logits = self.mlp_head(cls_output)
         return logits
@@ -108,7 +108,7 @@ def get_model(model_type, num_classes, config_dict, embedding_dim=None, hf_token
             num_layers=config_dict.get('num_layers', 1),
             dropout=config_dict.get('dropout', 0.5)
         )
-    elif model_type_lower == 'peft_bert_mlp':
+    elif model_type_lower == 'peft_mpnet_mlp':
         print(f"Loading base model '{config_dict['hf_base_model_name']}' for PEFT...")
         try:
             base_model = AutoModel.from_pretrained(config_dict['hf_base_model_name'])
@@ -121,7 +121,7 @@ def get_model(model_type, num_classes, config_dict, embedding_dim=None, hf_token
             task_type=TaskType.FEATURE_EXTRACTION,
             r=config_dict.get('lora_rank', 64),
             lora_alpha=config_dict.get('lora_alpha', 128),
-            target_modules=config_dict.get('lora_target_modules', ["q_lin", "v_lin"]),
+            target_modules=config_dict.get('lora_target_modules', ["query", "key", "value"]),
             lora_dropout=config_dict.get('lora_dropout', 0.1),
             bias=config_dict.get('lora_bias', "none")
         )

@@ -18,9 +18,9 @@ python train.py cnn --run_name refactored_CNN_FastText
 python train.py bilstm --run_name refactored_BiLSTM_FastText
 ```
 
-### PEFT Fine-tuned BERT with MLP Head (LoRA)
+### PEFT Fine-tuned MPNet with MLP Head (LoRA)
 ```
-python train.py peft_bert_mlp --run_name refactored_PEFT_DistilBERT_LoRA
+python train.py peft_mpnet_mlp --run_name refactored_PEFT_MPNet_LoRA
 ```
 
 ## Inference Commands
@@ -41,13 +41,13 @@ python inference.py --model_type_for_inference local_custom --model_path ./testi
 python inference.py --model_type_for_inference local_custom --model_path ./testing_checkpoints/best_bilstm_refactored_BiLSTM_FastText.pth
 ```
 
-### PEFT Fine-tuned BERT with MLP Head (LoRA)
+### PEFT Fine-tuned MPNet with MLP Head (LoRA)
 ```
 python inference.py \
-    --model_type_for_inference peft_bert_mlp \
-    --peft_adapter_path ./testing_checkpoints/best_lora_adapters_refactored_PEFT_DistilBERT_LoRA_distilbert-base-multilingual-cased_R64_A128 \
-    --peft_config_path ./testing_checkpoints/best_peft_config_refactored_PEFT_DistilBERT_LoRA_distilbert-base-multilingual-cased_R64_A128_config.json \
-    --peft_head_path ./testing_checkpoints/best_mlp_head_refactored_PEFT_DistilBERT_LoRA_distilbert-base-multilingual-cased_R64_A128.pth
+        --model_type_for_inference peft_mpnet_mlp \
+        --peft_adapter_path ./testing_checkpoints/best_lora_adapters_refactored_PEFT_MPNet_LoRA_all-mpnet-base-v2_R64_A128 \
+        --peft_config_path ./testing_checkpoints/best_peft_config_refactored_PEFT_MPNet_LoRA_all-mpnet-base-v2_R64_A128_config.json \
+        --peft_head_path ./testing_checkpoints/best_mlp_head_refactored_PEFT_MPNet_LoRA_all-mpnet-base-v2_R64_A128.pth
 ```
 
 ### Pre-trained Multilingual Sentiment Analysis Model (Zero-Shot)
