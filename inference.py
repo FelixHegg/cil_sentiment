@@ -47,22 +47,21 @@ def main(args):
             device_map="auto",
             low_cpu_mem_usage=True,
         )
+    base_model = base_model.to(device)
 
-    # 2) Load your LoRA adapters *also* on CPU
+    # # 2) Load your LoRA adapters *also* on CPU
     model = PeftModel.from_pretrained(
         base_model,
         os.path.join(args.result_dir, args.ckpt_name),
         device_map="auto",
         low_cpu_mem_usage=True,
-    )
-
+    
     _, data_eval = prepare_data(tokenizer, config["data_path"])
     print(f"Eval dataset size: {len(data_eval)}")
 
     model = model.merge_and_unload()
     model.config.use_cache = True
     model = model.to(device)
-    model = torch.compile(model)
     model.eval()
     
     # Create output file

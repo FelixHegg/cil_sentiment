@@ -68,6 +68,35 @@ def generate_reasoning_prompt(tokenizer: AutoTokenizer, text: str) -> dict:
 
     return tokenizer.apply_chat_template(r1_prefix, tokenize=False, continue_final_message=True)
 
+def generate_reasoning_prompt_QWEN3(tokenizer: AutoTokenizer, text: str) -> dict:
+    """Generate individual prompt with reasoning."""
+    system = (
+        "<|im_start|>system\n"
+        "You are a helpful assistant. You first think about the reasoning "
+        "process and then provide the user with the answer.\n"
+        "<|im_end|>"
+    )
+
+    # 2) User turn
+    user = (
+        "<|im_start|>user\n"
+        f"Determine the sentiment of the following text:\n\n{text}\n\n"
+        "Show your analysis in <think></think> tags, and put the final answer "
+        "(positive/negative/neutral) in <answer></answer> tags.\n"
+        "<|im_end|>"
+    )
+
+    # 3) Assistant “think” turn
+    assistant = (
+        "<|im_start|>assistant\n"
+        "Let me think step by step.\n"
+        "<think>"
+    )
+
+    # 4) Concatenate and tokenize
+    prompt_str = "\n".join([system, user, assistant])
+    return prompt_str
+
 
 def prepare_data(tokenizer, data_path: str):
     """Load and format dataset."""
@@ -83,6 +112,6 @@ def prepare_data(tokenizer, data_path: str):
         prompt = generate_reasoning_prompt(tokenizer, x["sentence"])
         return {"prompt": prompt, "target": x["label"]}
 
-    train_ds = dataset["train"].map(map_fn, remove_columns=dataset["train"].column_names)
-    eval_ds = dataset["test"].map(map_fn, remove_columns=dataset["test"].column_names)
+    train_ds = dataset["train"].map(map_fn, remove_columns=dataset["train"].column_names, load_from_cache_file=False)
+    eval_ds = dataset["test"].map(map_fn, remove_columns=dataset["test"].column_names, load_from_cache_file=False)
     return train_ds, eval_ds

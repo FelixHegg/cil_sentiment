@@ -8,7 +8,7 @@ import wandb
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from trl import GRPOConfig, GRPOTrainer
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, PeftModel, get_peft_model, prepare_model_for_kbit_training
 
 from src.utils import Logger, prepare_data
 from src.reward import create_format_reward_fn, create_correctness_reward_fn
@@ -18,7 +18,11 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Setup experiment directory
-    exp_dir = setup_experiment(args.model, args.results_dir)
+    if args.continue_from:
+        exp_dir = args.continue_from
+    else:
+        exp_dir = setup_experiment(args.model, args.results_dir)
+    
     logger = Logger(exp_dir, verbose=args.verbose)
     logger.info(f"using device {device}")
     logger.info(f"experiment directory created at {exp_dir}")
@@ -31,23 +35,29 @@ def main(args):
     )
 
     # Save config
-    with open(os.path.join(exp_dir, "config.yaml"), "w") as f:
-        yaml.dump(vars(args), f)
+    if args.continue_from:
+        with open(os.path.join(args.continue_from, "../config.yaml"), "r") as f:
+            config = yaml.safe_load(f)
+        args = argparse.Namespace(**config)
+        args.continue_from = exp_dir
+    else:
+        with open(os.path.join(exp_dir, "config.yaml"), "w") as f:
+            yaml.dump(vars(args), f)
 
     # Prepare data
     tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=True)
-    data_train, data_eval = prepare_data(tokenizer, args.data_path)
+    data_train, _ = prepare_data(tokenizer, args.data_path)
     logger.info(f"train dataset size: {len(data_train)}")
-    logger.info(f"eval dataset size: {len(data_eval)}")
+    data_train = data_train.shuffle(seed=args.seed)
 
     # Load model
     dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
     if args.load_in_4bit:
         quant_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=dtype,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
+            load_in_4bit=True,
+            bnb_4bit_compute_dtype=dtype,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
         )
         base_model = AutoModelForCausalLM.from_pretrained(
             args.model,
@@ -64,20 +74,31 @@ def main(args):
             low_cpu_mem_usage=True,
         )
     base_model.config.use_cache = False
-    base_model.gradient_checkpointing_enable()
+
+    if args.gradient_accumulation_steps > 1:
+        base_model.gradient_checkpointing_enable()
     
     # Apply LoRA
-    peft_config = peft_config = LoraConfig(
-        task_type="CAUSAL_LM",
-        inference_mode=False,
-        r=args.lora_rank,
-        target_modules=args.target_modules,
-        lora_alpha=args.lora_alpha,
-        lora_dropout=args.lora_dropout,
-    )  
+    if args.continue_from:
+        model = PeftModel.from_pretrained(
+            base_model,
+            args.continue_from,
+            device_map="auto",
+            low_cpu_mem_usage=True,
+        )
+    else:
+        peft_config = peft_config = LoraConfig(
+            task_type="CAUSAL_LM",
+            inference_mode=False,
+            r=args.lora_rank,
+            target_modules=args.target_modules,
+            lora_alpha=args.lora_alpha,
+            lora_dropout=args.lora_dropout,
+        )  
 
-    # Load model with LoRA
-    model = get_peft_model(base_model, peft_config)
+        # Load model with LoRA
+        model = get_peft_model(base_model, peft_config)
+    
     model.train()
 
     # Count parameters
@@ -124,6 +145,10 @@ def main(args):
     trainer.add_callback(logger)
 
     logger.info("Starting training...")
+    if args.continue_from:
+        trainer._load_from_checkpoint(args.continue_from)
+        trainer.args = training_config
+
     trainer.train()
 
 def setup_experiment(model_name: str, results_dir: os.PathLike):
@@ -135,11 +160,9 @@ def setup_experiment(model_name: str, results_dir: os.PathLike):
     experiment_index = len(glob(os.path.join(results_dir, "*")))
     model_string_name = model_name.replace("/", "-")
     experiment_dir = os.path.join(results_dir, f"{experiment_index:03d}-{model_string_name}")
-    checkpoint_dir = os.path.join(experiment_dir, "checkpoints")
 
-    # Make experiment directory
-    os.makedirs(checkpoint_dir, exist_ok=True)
-
+    # Create experiment directory   
+    os.makedirs(experiment_dir, exist_ok=True)
     return experiment_dir
 
 def count_parameters(model):
@@ -150,8 +173,8 @@ def count_parameters(model):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Train a model with GRPO.")
-    parser.add_argument("--results-dir", type=str, required=True, help="Directory to save results.")
-    parser.add_argument("--data-path", type=str, required=True, help="Path to the dataset.")
+    parser.add_argument("--results-dir", type=str, help="Directory to save results.")
+    parser.add_argument("--data-path", type=str, help="Path to the dataset.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")
     parser.add_argument("--verbose", type=int, default=1, help="Verbosity level (0: silent, 1: info, 2: debug).")
 
@@ -171,7 +194,7 @@ if __name__ == "__main__":
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay.")
     parser.add_argument("--warmup_ratio", type=float, default=0.0, help="Warmup ratio.")
     parser.add_argument("--max_grad_norm", type=float, default=1.0, help="Max gradient norm.")
-    parser.add_argument("--lr_scheduler_type", type=str, default="cosine", help="Learning rate scheduler type.")
+    parser.add_argument("--lr_scheduler_type", type=str, default="constant", help="Learning rate scheduler type.")
     parser.add_argument("--optim", type=str, default="adamw_torch", help="Optimizer type.")
     parser.add_argument("--logging_steps", type=int, default=1, help="Logging steps.")
     parser.add_argument("--gradient_accumulation_steps", type=int, default=1, help="Gradient accumulation steps.")
@@ -183,6 +206,11 @@ if __name__ == "__main__":
     parser.add_argument("--max_completion_length", type=int, default=256, help="Max completion length.")
     parser.add_argument("--max_steps", type=int, default=1000, help="Max training steps.")
 
+    parser.add_argument("--continue-from", type=str, default=None, help="Continue training from a checkpoint.")
+
     args = parser.parse_args()
+
+    if args.continue_from is None and args.results_dir is None and args.data_path is None:
+        raise ValueError("Please provide --results-dir and --data-path arguments or --continue-from argument.")
 
     main(args)

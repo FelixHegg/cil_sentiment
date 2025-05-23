@@ -3,7 +3,7 @@ from typing import List, Callable, Optional
 import re
 
 # Since we determine the start of the answer, we don't need to check for the start tag
-TAG_PATTERN = re.compile(r"(.*?)</think>.*?<answer>(.*?)</answer>", re.DOTALL)
+TAG_PATTERN = re.compile(r"(.*?)</think>*?<answer>(.*?)</answer>", re.DOTALL)
 ANSWER_PATTERN = re.compile(r"<answer>\s*(.+?)\s*</answer>", re.DOTALL)
 
 LABEL_TO_VALUE = {
