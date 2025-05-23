@@ -1,4 +1,3 @@
-# jiajie_ml_baselines/train.py
 import argparse
 import pandas as pd
 import numpy as np
@@ -39,7 +38,7 @@ def main(args):
         **model_specific_config
     }
 
-    if args.model_type == 'peft_bert_mlp':
+    if args.model_type == 'peft_mpnet_mlp':
         hf_tokenizer_name = model_specific_config['hf_base_model_name']
         max_seq_len = model_specific_config['max_seq_len']
         input_ids, attention_masks, _ = pp.preprocess_data_hf(sentences, hf_tokenizer_name, max_seq_len)
@@ -128,7 +127,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train a sentiment analysis model.")
-    parser.add_argument("model_type", type=str, choices=['mlp', 'cnn', 'bilstm', 'peft_bert_mlp'],
+    parser.add_argument("model_type", type=str, choices=['mlp', 'cnn', 'bilstm', 'peft_mpnet_mlp'],
                         help="Type of model to train.")
     parser.add_argument("--run_name", type=str, required=True, help="Unique name for this run.")
     args = parser.parse_args()

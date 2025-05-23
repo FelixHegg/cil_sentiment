@@ -1,0 +1,9 @@
+model: "Qwen/Qwen2.5-3B-Instruct"
+path_data: "data"
+load_in_4bit: true
+lora_path: "outputs/checkpoint-30"
+max_seq_length: 4096
+max_completion_length: 128
+batch_size: 4
+
+

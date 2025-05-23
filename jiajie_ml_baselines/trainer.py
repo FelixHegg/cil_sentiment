@@ -1,4 +1,3 @@
-# jiajie_ml_baselines/trainer.py
 import torch
 import torch.nn as nn
 import numpy as np
@@ -66,7 +65,7 @@ def evaluate(model, loader, criterion, device, index_to_mae_label_map, model_typ
     all_preds_indices, all_labels_indices = [], []
     with torch.no_grad():
         for batch_data in loader:
-            if model_type == 'peft_bert_mlp':
+            if model_type == 'peft_mpnet_mlp':
                 input_ids = batch_data['input_ids'].to(device)
                 attention_mask = batch_data['attention_mask'].to(device)
                 labels_batch = batch_data['labels'].to(device)
@@ -97,7 +96,7 @@ def train_one_epoch(model, loader, optimizer, criterion, device, index_to_mae_la
     all_preds_indices, all_labels_indices = [], []
     for i, batch_data in enumerate(loader):
         optimizer.zero_grad()
-        if model_type == 'peft_bert_mlp':
+        if model_type == 'peft_mpnet_mlp':
             input_ids = batch_data['input_ids'].to(device)
             attention_mask = batch_data['attention_mask'].to(device)
             labels_batch = batch_data['labels'].to(device)
@@ -148,7 +147,7 @@ def train_model(model, model_type, train_loader, val_loader, optimizer, schedule
     early_stopping_patience = inference_details.get('early_stopping_patience', model_cfg.get('early_stopping_patience', config.EARLY_STOPPING_PATIENCE))
     
     run_suffix = "" # Initialize run_suffix
-    if model_type == 'peft_bert_mlp':
+    if model_type == 'peft_mpnet_mlp':
         base_model_name_suffix = model_cfg.get('hf_base_model_name', 'unknown_base').split("/")[-1]
         lora_rank = model_cfg.get('lora_rank', 'Rna')
         lora_alpha = model_cfg.get('lora_alpha', 'Ana')
@@ -222,9 +221,9 @@ def train_model(model, model_type, train_loader, val_loader, optimizer, schedule
             best_val_loss = val_loss
             epochs_no_improve = 0
             try:
-                if model_type == 'peft_bert_mlp':
+                if model_type == 'peft_mpnet_mlp':
                     os.makedirs(best_lora_adapter_dir, exist_ok=True)
-                    model.bert_peft.save_pretrained(best_lora_adapter_dir)
+                    model.peft.save_pretrained(best_lora_adapter_dir)
                     torch.save(model.mlp_head.state_dict(), best_mlp_head_path)
                     print(f'---> Val Loss decreased to {best_val_loss:.4f}. Saving PEFT adapters to {best_lora_adapter_dir} and MLP head to {best_mlp_head_path}')
                 else:
@@ -233,7 +232,7 @@ def train_model(model, model_type, train_loader, val_loader, optimizer, schedule
 
                 # Define inf_config_filename_base before using it
                 inf_config_filename_base = f"best_{model_type}_{run_name}"
-                if model_type == 'peft_bert_mlp':
+                if model_type == 'peft_mpnet_mlp':
                      inf_config_filename_base = f"best_peft_config_{run_name}_{run_suffix}"
                 
                 inf_config_path = os.path.join(config.MODEL_SAVE_DIR, f"{inf_config_filename_base}_config.json")
@@ -262,12 +261,12 @@ def train_model(model, model_type, train_loader, val_loader, optimizer, schedule
     print(f"\nLoading best model for final evaluation...")
     try:
         final_model_instance = None
-        if model_type == 'peft_bert_mlp':
+        if model_type == 'peft_mpnet_mlp':
             from models import PeftWithMLPHeadClassifier
             from transformers import AutoModel
             from peft import PeftModel
             
-            hf_base_model_name_for_load = inference_details.get('hf_base_model_name', config.HF_BASE_MODEL_FOR_BERT_PEFT)
+            hf_base_model_name_for_load = inference_details.get('hf_base_model_name', config.HF_BASE_MODEL_FOR_PEFT)
             base_model_for_eval = AutoModel.from_pretrained(hf_base_model_name_for_load)
             peft_model_for_eval = PeftModel.from_pretrained(base_model_for_eval, best_lora_adapter_dir)
             
