@@ -41,7 +41,7 @@ class SFTTrainerWrapper:
             },
             gradient_accumulation_steps=self._config["gradient_accumulation_steps"],
             per_device_train_batch_size=self._config["per_device_train_batch_size"],
-            # max_seq_length=self._config["max_seq_length"],
+            max_seq_length=self._config["max_seq_length"],
             num_train_epochs=self._config["num_train_epochs"],
             learning_rate=self._config["learning_rate"],
             optim=self._config["optim"],
@@ -49,7 +49,7 @@ class SFTTrainerWrapper:
             report_to="wandb",
             logging_steps=1,
             output_dir=self._config["exp_dir"],
-            remove_unused_columns=False,
+            remove_unused_columns=True,
         )
 
     def _get_SFT_trainer(self) -> SFTTrainer:

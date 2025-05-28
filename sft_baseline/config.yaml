@@ -2,15 +2,15 @@ model: "Qwen/Qwen2.5-3B-Instruct"
 path_data: "data"
 gradient_checkpointing: true
 use_reentrant: false
-gradient_accumulation_steps: 8
-per_device_train_batch_size: 8
-max_seq_length: 4096
+gradient_accumulation_steps: 16
+per_device_train_batch_size: 4
+max_seq_length: 3072
 num_train_epochs: 1
 learning_rate: 0.00005
 optim: "adamw_torch"
-save_steps: 10
+save_steps: 50
 load_in_4bit: true
-lora_rank: 16
+lora_rank: 64
 target_modules:
     - "q_proj"
     - "k_proj"

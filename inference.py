@@ -55,7 +55,7 @@ def main(args):
         os.path.join(args.result_dir, args.ckpt_name),
         device_map="auto",
         low_cpu_mem_usage=True,
-    
+    )
     _, data_eval = prepare_data(tokenizer, config["data_path"])
     print(f"Eval dataset size: {len(data_eval)}")
 
