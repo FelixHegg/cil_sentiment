@@ -1,6 +1,6 @@
 # Rule-Based Sentiment Analysis Script
 
-This script applies simple, rule‐based sentiment analysis to your dataset using **TextBlob** and **VADER**. It will:
+This script applies rule‐based sentiment analysis to your dataset using **TextBlob** and **VADER**. It will:
 
 1. Load training and test data.  
 2. Apply a TextBlob‐based sentiment classifier.  
