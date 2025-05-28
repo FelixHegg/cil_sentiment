@@ -78,11 +78,34 @@ We provide several baselines, each located in its own subfolder with a dedicated
 
 ```bash
 python train.py \
-  --data-path ./data/train.json \
-  --results-dir ./results \
+  --data-path /data/train.json \
+  --results-dir /results \
   --model Qwen/Qwen2.5-3B-Instruct \
   --load_in_4bit \
   --lora_rank 16 \
   --learning_rate 2e-4 \
   --num_generations 4 \
   --max_steps 1000
+
+## 🔍 Inference
+
+After training, you can run inference using the provided script to generate predictions from a saved model checkpoint.
+
+### 🛠️ Arguments
+
+| Argument         | Type   | Default             | Description                                      |
+|------------------|--------|---------------------|--------------------------------------------------|
+| `--result-dir`   | `str`  | _required_          | Directory containing the model and configuration. |
+| `--ckpt-name`    | `str`  | _required_          | Name of the checkpoint to load.                  |
+| `--batch-size`   | `int`  | `16`                | Batch size for inference.                        |
+| `--output-file`  | `str`  | `predictions.csv`   | File to save the generated predictions.          |
+| `--seed`         | `int`  | `42`                | Random seed for reproducibility.                 |
+
+### 🧪 Example
+
+```bash
+python inference.py \
+  --result-dir /results/004-Qwen-Qwen2.5-3B-Instruct \
+  --ckpt-name checkpoint-1000 \
+  --batch-size 32 \
+  --output-file final_predictions.csv
