@@ -85,7 +85,7 @@ python train.py \
   --lora_rank 16 \
   --learning_rate 2e-4 \
   --num_generations 4 \
-  --max_steps 1000
+  --max_steps 1000'''
 
 ## 🔍 Inference
 
@@ -108,4 +108,4 @@ python inference.py \
   --result-dir /results/004-Qwen-Qwen2.5-3B-Instruct \
   --ckpt-name checkpoint-1000 \
   --batch-size 32 \
-  --output-file final_predictions.csv
+  --output-file final_predictions.csv'''
