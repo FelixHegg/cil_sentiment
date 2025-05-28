@@ -109,4 +109,5 @@ python inference.py \
   --result-dir /results/004-Qwen-Qwen2.5-3B-Instruct \
   --ckpt-name checkpoint-1000 \
   --batch-size 32 \
-  --output-file final_predictions.csv```
+  --output-file final_predictions.csv
+```
