@@ -1,15 +1,25 @@
 # Sentiment Classification through Inference-Time Reasoning
 
-This repository contains a training script for fine-tuning large language models using **GRPO** (Generative Reinforcement Policy Optimization). It supports LoRA-based fine-tuning and uses the Hugging Face Transformers library.
+This repository contains a training script for fine-tuning large language models using **GRPO** (Group Relative Policy Optimization). It supports LoRA-based fine-tuning and uses the Hugging Face Transformers library.
 
-## 🚀 Features
 
-- Supports any Hugging Face model (default: `Qwen/Qwen2.5-3B-Instruct`)
-- LoRA integration for efficient fine-tuning
-- 4-bit quantization (optional)
-- Custom training hyperparameters
-- Generation-based optimization with GRPO
-- Logging, checkpointing, and resume support
+## 🚀 Key Features
+
+- ✅ Works with any Hugging Face-compatible language model (default: `Qwen/Qwen2.5-3B-Instruct`)
+- ⚡ Efficient fine-tuning using [LoRA (Low-Rank Adaptation)](https://arxiv.org/abs/2106.09685)
+- 🧠 GRPO: Group Relative Policy Optimization for generation-based learning
+- 🧊 Optional 4-bit quantization for memory-efficient training
+- 🎯 Fully configurable training hyperparameters
+- 💾 Checkpointing and resume training support
+- 📊 Verbose logging for debugging and tracking
+
+## 🧪 Baselines
+
+We provide several baselines, each located in its own subfolder with a dedicated `README.md` for usage instructions:
+
+- **Deep Learning** (`baselines_deep_learning/`): Includes `MPNet + MLP + LoRA`, `Multilingual BERT`, `Bi-LSTM`, `1D CNN`, `MLP (Word2Vec)`, and `SVM`.
+- **Next-Token Prediction** (`baselines_next_token_pred/`): Standard language modeling without reasoning.
+- **Rule-Based** (`baselines_rule_based/`): Includes VADER, TextBlob, and a script for generating the human baseline.
 
 ---
 
