@@ -85,21 +85,3 @@ This will:
 * Print the **Competition Kaggle score L**
 
 ---
-
-## Output
-
-* **100\_labeled\_by\_team.csv**
-  Contains all 100 human‐labeled sentences with columns:
-
-  ```
-  id, sentence, pred_label
-  ```
-
-* **Console Output**
-
-  ```
-  Accuracy: XX.XX%
-  Competition score L: Y.YYY
-  ```
-
----
